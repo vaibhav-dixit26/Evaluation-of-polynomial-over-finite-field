@@ -1,14 +1,9 @@
 load("Poly_helper.sage")
 #Quadratic evaluation
 def EVAQuadratic(arrays, x_vec, H_n, H_eps, d, k_list, q):
-    count_ops=0
-    l = len(k_list)
     if H_n == 1:
-        
         k1 = k_list[-1]
-        
         arrays[(0,)][k1 + 1] = (arrays[(0,)][1] + arrays[(k1,)][0]) % q
-        count_ops+=1
 
     if H_n==2: 
         k1 = k_list[-1]
@@ -16,40 +11,31 @@ def EVAQuadratic(arrays, x_vec, H_n, H_eps, d, k_list, q):
         if x_k1>1:
             arrays[(k1,)][1]=(arrays[(k1,)][0] + arrays[(k1,k1,)][0]) % q
             arrays[(0,)][k1+1]=(arrays[(0,)][k1+1] + arrays[(k1,)][1]) % q
-            count_ops+=2
         else: 
             k2 = k_list[-2]
             arrays[(k1,)][k2-k1+1]=(arrays[(k1,)][0] + arrays[(k1,k2,)][0]) % q
             arrays[(0,)][k1+1]=(arrays[(0,)][k2+1] + arrays[(k1,)][k2-k1+1]) % q
-            count_ops+=2
     if H_n>2: 
         k1 = k_list[-1]
         x_k1 = x_vec[len(x_vec) - k1]
         if x_k1>1:
             if x_k1>2:
                 arrays[(k1,)][1]=(arrays[(k1,)][1] + arrays[(k1,k1,)][0]) % q
-                count_ops+=1
             else: 
                 k2 = k_list[-2]
                 arrays[(k1,)][1]=(arrays[(k1,)][k2-k1+1] + arrays[(k1,k1,)][0]) % q
-                count_ops+=1
             arrays[(0,)][k1+1]=(arrays[(0,)][k1+1] + arrays[(k1,)][1]) % q 
-            count_ops+=1
         else: 
             k2 = k_list[-2]
             x_k2 = x_vec[len(x_vec) - k2]
             if x_k2> 1:
                 arrays[(k1,)][k2-k1+1]=(arrays[(k1,)][k2-k1+1] + arrays[(k1,k2)][0]) % q
-                count_ops+=1
             else:
                 k3 = k_list[-3]
                 arrays[(k1,)][k2-k1+1]=(arrays[(k1,)][k3-k1+1] + arrays[(k1,k2)][0]) % q
-                count_ops+=1
-            arrays[(0,)][k1+1]=(arrays[(0,)][k2+1] + arrays[(k1,)][k2-k1+1]) % q
-            count_ops+=1
-            
+            arrays[(0,)][k1+1]=(arrays[(0,)][k2+1] + arrays[(k1,)][k2-k1+1]) % q            
     
-    return arrays[(0,)][k_list[-1] + 1] % q, arrays,count_ops
+    return arrays[(0,)][k_list[-1] + 1] % q, arrays
 
 
 
@@ -68,7 +54,7 @@ current_vector,H_eps, newarrays
             H[num] += 1
             H_eps = compute_H_eps(K, h, current_vector)
             
-            val, newarrays, oprs = EVAQuadratic(
+            val, newarrays = EVAQuadratic(
                 arrays=newarrays,
                 x_vec=current_vector,
                 H_n=H_eps[-1],
@@ -110,13 +96,13 @@ q = 3
 degree = 2
 
 '''
-If want to fix N and W then 
+If you want to fix N and W, then 
 write N = [n1, n2,...] such that sum(n_i)==n
 and   W = [w1, w2,...] such that 0<w_i<=n_i
 '''
 N, W = random_W_N(n)                               # generate random ni and wi
 poly = gen_random_poly(n, q, degree, sparsity=0.5) # generate random polynomial
-f, d = build_polynomial(poly, n, q)                # build a function same as generated polynomial for direct evaluation.
+f, d = build_polynomial(poly, n, q)                # build a function same as the generated polynomial for direct evaluation.
 N_org=N[:]
 W_org=W[:]
 print("Variables(n):", n, ", Degree(d):", d, ", Order of field(q):",q, "\n","polynomial:", poly)
