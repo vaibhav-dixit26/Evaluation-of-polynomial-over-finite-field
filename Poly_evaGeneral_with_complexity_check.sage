@@ -12,7 +12,7 @@ def EVA_Gen(arrays, x_vec, H_n, H_eps, d, k_list, q):
     q      : field size
     """
     count_ops=0
-    l = len(k_list)
+    h = len(k_list)
     # --------------------------------------------------
     # Case H_n = 1
     # --------------------------------------------------
@@ -27,33 +27,16 @@ def EVA_Gen(arrays, x_vec, H_n, H_eps, d, k_list, q):
         count_ops+=1
         # print(A0, k1,arrays[(k1,)][0])
         return A0[k1 + 1], arrays, count_ops
-    if d == 1:
-        # print("here, d=1, again single step calculation ")
-        A0 = arrays[(0,)]
-        
-        k1 = k_list[-1]
-        x_k1=x_vec[len(x_vec)-k1]
-        if x_k1>1:
-            A0[k1 + 1] = (A0[k1+1] + arrays[(k1,)][0]) % q
-            count_ops+=1
-        else:
-            k2 = k_list[-2]
-            A0[k1 + 1] = (A0[k2+1] + arrays[(k1,)][0]) % q
-            count_ops+=1
-        return A0[k1 + 1], arrays, count_ops
+    
     # --------------------------------------------------
     # Main loops
     # --------------------------------------------------
-    for eps_idx in range(l, 0, -1):
-        ε = eps_idx
-        k_eps = k_list[l-eps_idx]
-        η = H_eps[ε - 1]
+    for eps_idx in range(h, 0, -1):
+        k_eps = k_list[h-eps_idx]
+        η = H_eps[eps_idx - 1]
         x_keps = x_vec[len(x_vec) - k_eps]
-        for δ in range(x_keps - 1, -1, -1):
+        for δ in range(min(x_keps-1,d-1-η), -1, -1):
             step = η + δ
-            if step >= d:
-                continue
-
             # --------------------------------------------------
             # Case step = H - 1
             # --------------------------------------------------
@@ -71,7 +54,7 @@ def EVA_Gen(arrays, x_vec, H_n, H_eps, d, k_list, q):
                     label2 = build_label(k_list, x_vec, eps_idx, delta=1)
                     num1 = 0 if eps_idx==1 else 1
                     # print(f"label1={label1}, label2={label2}")
-                    idx = k_eps - k_list[(l-eps_idx+1)*num1]*num1 + 1
+                    idx = k_eps - k_list[(h-eps_idx+1)*num1]*num1 + 1
 
                     arrays[label1][idx] = (arrays[label1][0] + arrays[label2][0]) % q
                     count_ops+=1
@@ -93,7 +76,7 @@ def EVA_Gen(arrays, x_vec, H_n, H_eps, d, k_list, q):
                         arrays[label][1] = (arrays[label][1] + arrays[label_next][1 * num]) % q                        
                         count_ops+=1
                     else:
-                        idx = k_list[l-eps_idx - 1] - k_eps + 1
+                        idx = k_list[h-eps_idx - 1] - k_eps + 1
                         arrays[label][1] = (arrays[label][idx]+ arrays[label_next][idx * num]) % q
                         count_ops+=1
                 # ------------------------------
@@ -105,13 +88,13 @@ def EVA_Gen(arrays, x_vec, H_n, H_eps, d, k_list, q):
                     label2 = build_label(k_list, x_vec, eps_idx, delta=1)
                     # print(f"label1={label1}, label2={label2}")
                     num1 = 0 if eps_idx==1 else 1
-                    idx = k_eps - k_list[(l-eps_idx+1)*num1]*num1 + 1
+                    idx = k_eps - k_list[(h-eps_idx+1)*num1]*num1 + 1
                     if a > 1:
                         arrays[label1][idx] = (arrays[label1][idx]+ arrays[label2][1 * num]) % q
                         count_ops+=1
                     else:
                         num1 = 0 if eps_idx==1 else 1
-                        idx1 = k_list[l-eps_idx-1]  - k_list[(l-eps_idx+1)*num1]*num1  + 1
+                        idx1 = k_list[h-eps_idx-1]  - k_list[(h-eps_idx+1)*num1]*num1  + 1
                         arrays[label1][idx] = (arrays[label1][idx1]+ arrays[label2][(idx1-idx+1) * num]) % q
                         count_ops+=1
     # --------------------------------------------------
