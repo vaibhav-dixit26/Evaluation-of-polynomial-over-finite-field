@@ -3,7 +3,6 @@ load("Poly_helper.sage")
 #Quadratic evaluation
 def EVAQuadratic(arrays, x_vec, H_n, H_eps, d, k_list, q):
     count_ops=0
-    l = len(k_list)
     if H_n == 1:
         
         k1 = k_list[-1]
@@ -172,14 +171,23 @@ print("\nFunctional Correctness Check:")
 exhaustive_eva_res = {x: f(x) for x in product(range(q), repeat=n)}
 card_part_space=0
 ''' 
-The below part can be ignored by inserting this code in ENUQuadratic function as done in Poly_evaQuadratic code. 
+The part below can be ignored by inserting this code in the ENUQuadratic function, as done in the Poly_evaQuadratic code. 
 if val!=f(current_vector):
                
     raise ValueError(
     print("wrong result")
     
     )
-But then we need to calculate cardinality of structured space separately, to verify the complexity units.
+But then we need to calculate the cardinality of the structured space separately, to verify the complexity units.
+Here is the code for calculating the cardinality of a structured space. 
+def structured_space_cardinality(n_list, w_list, q):
+    from math import comb
+    card = 1
+    for n_j, w_j in zip(n_list, w_list):
+        card *= sum(comb(n_j, i) * (q - 1)**i for i in range(w_j + 1))
+    return card
+print(structured_space_cardinality(N_org,W_org,q))
+
 '''
 for x in product(range(q), repeat=n):
     if not in_structured_space(list(x), N_org, W_org):
